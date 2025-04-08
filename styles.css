@@ -1,0 +1,166 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.custom-slider {
+  background: grey; /* Set the track color to grey */
+  height: 5px; /* Adjust the height of the track */
+  border-radius: 5px; /* Add rounded corners */
+}
+
+.custom-slider::-webkit-slider-thumb {
+  background: #007bff; /* Set the thumb color */
+  border: none;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.custom-slider::-moz-range-thumb {
+  background: #007bff; /* Set the thumb color for Firefox */
+  border: none;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.container {
+  position: relative; /* Creates a positioning context */
+  width: 1000px;
+  height: 1000px;
+  display: flex;
+  flex-direction: column;
+}
+
+#canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.ui {
+  position: absolute;
+  top: 100px;
+  left: 930px;
+  display: flex;
+  flex-direction: column;
+  gap: 13rem;
+}
+
+.zoom-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.playPauseButton,
+.zoom-button {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playPauseButton {
+  background-color: #00babc;
+  color: white;
+}
+
+.playPauseButton:hover {
+  outline: 1px;
+  outline-color: #0099d5;
+  outline-style: solid;
+}
+
+.playPauseButton > img {
+  width: 1.3rem;
+  height: auto;
+}
+
+.zoom-button {
+  background-color: #313333;
+  color: white;
+  font-size: 1.8rem;
+}
+
+.zoom-button:hover {
+  outline: 1px;
+  outline-color: #0099d5;
+  outline-style: solid;
+}
+
+.top-controls {
+  display: flex;
+  gap: 20px;
+  padding: 10px;
+  background-color: rgb(0, 0, 0);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  align-items: center;
+  z-index: 1;
+}
+
+.averaging-controls {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.averaging-controls label {
+  color: white;
+}
+
+.averaging-controls select {
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.averaging-controls select:hover {
+  background-color: #444;
+}
+
+.speed-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 200px;
+}
+
+.speed-controls label {
+  color: white;
+  min-width: 30px;
+}
+
+.speed-controls input[type="range"] {
+  flex-grow: 1;
+}
+
+.points-controls {
+  position: static;
+}
+
+.top-controls button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.top-controls button:hover {
+  background-color: #0056b3;
+}
