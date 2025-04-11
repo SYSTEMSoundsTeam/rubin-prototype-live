@@ -46,13 +46,38 @@ function drawPoints(points, color) {
 }
 
 function onCanvas() {
-    return (
-        mouseIsPressed &&
-        mouseX >= 0 &&
-        mouseX <= width &&
-        mouseY >= 0 &&
-        mouseY <= height
-    );
+  return (
+    mouseIsPressed &&
+    mouseX >= 0 &&
+    mouseX <= width &&
+    mouseY >= 0 &&
+    mouseY <= height
+  );
+}
+
+function areArrowsPressed() {
+  return (
+    keyIsDown(LEFT_ARROW) ||
+    keyIsDown(RIGHT_ARROW) ||
+    keyIsDown(UP_ARROW) ||
+    keyIsDown(DOWN_ARROW)
+  );
+}
+
+function keyPressed(event) {
+  if (key === " ") {
+    togglePlayPause();
+    event.preventDefault(); // Prevent default behavior
+  }
+  if (areArrowsPressed()) {
+    event.preventDefault(); // Prevent default scrolling behavior
+  }
+}
+
+function keyReleased(event) {
+  if (areArrowsPressed()) {
+    event.preventDefault(); // Prevent default scrolling behavior
+  }
 }
 
 function updateTargetPoint() {
@@ -70,7 +95,7 @@ function updateTargetPoint() {
     prevMouseX = undefined;
     prevMouseY = undefined;
 
-    if (isPlaying) {
+    if (isPlaying && !areArrowsPressed()) {
       // Perlin noise for the target point direction
       const angle = map(noise(noiseOffset), 0, 1, -PI, PI);
       let dx = speed * cos(angle);
@@ -114,6 +139,13 @@ function updateAveragingWindowFromDropdown(value) {
   let numValue = parseInt(value);
   if (!isNaN(numValue) && numValue > 0) {
     average_n = numValue;
+  }
+}
+
+function updateTargetRadiusDropdown(value) {
+  let numValue = parseInt(value);
+  if (!isNaN(numValue) && numValue > 0) {
+    target_radius = numValue;
   }
 }
 
@@ -272,16 +304,16 @@ function togglePlayPause() {
   playPauseImage.src = isPlaying
     ? "./assets/icons/pause-icon.png"
     : "./assets/icons/play-icon.png";
-    //updateSynthState();
+  //updateSynthState();
 }
 
 function updateSynthState() {
-    if (isPlaying && isPixelPlaying) {
-      synth.start();
-    } else {
-      synth.stop();
-    }
+  if (isPlaying && isPixelPlaying) {
+    synth.start();
+  } else {
+    synth.stop();
   }
+}
 
 // Load audio file into a buffer and store it in the audioBuffers object
 function loadAudio(name, url) {
@@ -313,12 +345,16 @@ function togglePixelPlayer() {
   isPixelPlaying = !isPixelPlaying;
   //isPixelPlaying ? synth.start() : synth.stop();
   const button = document.getElementById("togglePixelPlayer");
-  button.textContent = isPixelPlaying ? "Turn off Pixel Sound" : "Turn on Pixel Sound";
+  button.textContent = isPixelPlaying
+    ? "Turn off Pixel Sound"
+    : "Turn on Pixel Sound";
 }
 
 function togglePointsPlayer() {
   arePointsPlaying = !arePointsPlaying;
   ps.animations = [];
   const button = document.getElementById("togglePointsPlayer");
-  button.textContent = arePointsPlaying ? "Turn off Point Sound" : "Turn on Point Sound";
+  button.textContent = arePointsPlaying
+    ? "Turn off Point Sound"
+    : "Turn on Point Sound";
 }

@@ -1,16 +1,14 @@
 /////////////////////////////////////
 
-
 const canvas_size = 1000; // canvas size
 
 let target_point = [0, 0]; // Target point coordinates
 let target_pixel = [0, 0];
 let points; //master array of all points
-let point_size_scale = 20; //slacing factor for size of points 
+let point_size_scale = 20; //slacing factor for size of points
 const n_frames_subset = 60; // Number of frames between making subset tree
-const target_radius = 50; // Radius of the target circle in screen pixels
+let target_radius = 50; // Radius of the target circle in screen pixels
 const subset_radius = 200; // Radius of the subset circle in screen pixels
-
 
 let noiseOffset = Math.random() * 1000;
 let speed = 0.5; // Constant speed for the target point
@@ -37,7 +35,7 @@ let instruments = ["harp", "piano", "guitar"]; //instruemtns with premade sample
 
 let audioBuffers = {}; // Object to store multiple audio buffers
 
-let imageScale = 1; // Default scale factor (1 = original size, 1 screen pixel = 1 image pixel) 
+let imageScale = 1; // Default scale factor (1 = original size, 1 screen pixel = 1 image pixel)
 let dot_size = 5 * imageScale; //size for plotting points (for testing)
 let point_data; //point data read from file
 let image_filename = "picture_10_15_v21_cee_2440"; //image and data filename
@@ -76,12 +74,15 @@ function preload() {
 function setup() {
   userStartAudio(); // Ensures the audio context is started
 
-  const canvas = createCanvas(canvas_size, canvas_size); // Create a canvas 
+  const canvas = createCanvas(canvas_size, canvas_size); // Create a canvas
   canvas.parent("canvas-container"); // Attach the canvas to the HTML element with id 'canvas-container'
   background(255);
 
   bgImage.loadPixels(); // Load the pixel data of the background image
-  target_point = [Math.floor(Math.random() * bgImage.width),Math.floor(Math.random() * bgImage.height),]; // Random initial target point
+  target_point = [
+    Math.floor(Math.random() * bgImage.width),
+    Math.floor(Math.random() * bgImage.height),
+  ]; // Random initial target point
   target_pixel = image2canvas(target_point[0], target_point[1]); //should always be center of canvas!
 
   points = makePoints(point_data);
@@ -95,6 +96,20 @@ function setup() {
 }
 
 function draw() {
+  if (keyIsDown(LEFT_ARROW)) {
+    target_point[0] -= directionX * speed; // Move left
+  } else if (keyIsDown(RIGHT_ARROW)) {
+    target_point[0] += directionX * speed; // Move right
+  } else if (keyIsDown(UP_ARROW)) {
+    target_point[1] -= directionY * speed; // Move up
+  } else if (keyIsDown(DOWN_ARROW)) {
+    target_point[1] += directionY * speed; // Move down
+  }
+
+  // Constrain the target_pixel to stay within the canvas
+  target_point[0] = constrain(target_point[0], 0, bgImage.width);
+  target_point[1] = constrain(target_point[1], 0, bgImage.height);
+
   background(0);
   drawImage();
 
@@ -105,7 +120,7 @@ function draw() {
   ps.findNeighbours(target_point, (radius = target_radius / imageScale)); //find nearest neighbours from within subset (can pass a radius)
 
   // Update and draw animations
-  if (arePointsPlaying) { 
+  if (arePointsPlaying) {
     ps.updateAndDrawAnimations();
   }
 
@@ -115,20 +130,37 @@ function draw() {
 
   /////////////////////SONIFICATION////////////////////////////////////////////////
   // Retrieve the RGB values of the pixel in the background image at the target point
-  let rgbValues = getAverageRGBValues(target_point[0], target_point[1], average_n, (useWeighting = true));
+  let rgbValues = getAverageRGBValues(
+    target_point[0],
+    target_point[1],
+    average_n,
+    (useWeighting = true)
+  );
 
-  if (!isPlaying && mouseIsPressed && isPixelPlaying) { //manual mode 
-    // Update the synth while the mouse is being dragged
-    synth.update(onCanvas() ? rgbValues : { r: 0, g: 0, b: 0 });
-    
-    } else if (!isPlaying && !mouseIsPressed) {
-        // Stop the synth or perform some other action
-        synth.updateOsc(0, 0);
+  if (isPixelPlaying) {
+    if (!isPlaying && mouseIsPressed) {
+      //manual mode
+      // Update the synth while the mouse is being dragged
+      synth.update(onCanvas() ? rgbValues : { r: 0, g: 0, b: 0 });
+    } else if (!isPlaying && !mouseIsPressed && !areArrowsPressed()) {
+      // Stop the synth or perform some other action
+      synth.updateOsc(0, 0);
     } else {
-        // Update the synth normally when isPlaying is true
-        synth.update(rgbValues); //automatic mode (or manual mode while in automatic mode)
+      // Update the synth normally when isPlaying is true
+      synth.update(rgbValues); //automatic mode (or manual mode while in automatic mode)
     }
-  
+  } else {
+    synth.updateOsc(0, 0);
+  }
+
+  // if (isPixelPlaying) {
+  //   if (isPlaying || mouseIsPressed) {
+  //     synth.update(isPlaying || onCanvas() ? rgbValues : { r: 0, g: 0, b: 0 });
+  //       } else if (!areArrowsPressed()) {
+  //         synth.updateOsc(0, 0);}
+  //     } else {
+  //       synth.updateOsc(0, 0);
+  // }
 
   if (arePointsPlaying) {
     if (sampleMode === "pixels") {
@@ -152,10 +184,10 @@ function draw() {
       }
     } else if (sampleMode === "circle") {
       //trigger sound when a new point enters the circle
-    if (ps.newNearestNeighbours && ps.newNearestNeighbours.length > 0) {
-      let pointsToTrigger = ps.newNearestNeighbours.slice(0, 8); // Limit to at most 5 points
-      sampler.triggerPoints(pointsToTrigger);
-    }
+      if (ps.newNearestNeighbours && ps.newNearestNeighbours.length > 0) {
+        let pointsToTrigger = ps.newNearestNeighbours.slice(0, 8); // Limit to at most 5 points
+        sampler.triggerPoints(pointsToTrigger);
+      }
     }
   }
   //////////////////////////DIAGNOSTICS//////////////////////////////////////////
@@ -163,7 +195,12 @@ function draw() {
   noFill();
   stroke(255);
   strokeWeight(2);
-  ellipse(target_pixel[0], target_pixel[1], 2 * target_radius, 2 * target_radius);
+  ellipse(
+    target_pixel[0],
+    target_pixel[1],
+    2 * target_radius,
+    2 * target_radius
+  );
   stroke(0);
   strokeWeight(1);
 
@@ -174,18 +211,27 @@ function draw() {
     drawPoints([ps.nearestPoint], { r: 255, g: 0, b: 0 }); // Draw the nearest point in red
   }
 
-
   if (showPixelInfo) {
     // Display the color of the RGB values as a square
     fill(rgbValues.r, rgbValues.g, rgbValues.b);
     rect(10, height - 80, 40, 40);
     fill(255);
-    text(`RGB: (${rgbValues.r},${rgbValues.g},${rgbValues.b})`,60,height - 45);
+    text(
+      `RGB: (${rgbValues.r},${rgbValues.g},${rgbValues.b})`,
+      60,
+      height - 45
+    );
 
     // Display the target point coordinates
     fill(255);
     textSize(16);
-    text(`Target Pixel: (${target_point[0].toFixed(2)}, ${target_point[1].toFixed(2)})`,60,height - 65);
+    text(
+      `Target Pixel: (${target_point[0].toFixed(2)}, ${target_point[1].toFixed(
+        2
+      )})`,
+      60,
+      height - 65
+    );
     //text(`imageX, imageY: (${imageX.toFixed(2)}, ${imageY.toFixed(2)})`, 10, height - 110);
 
     // Display the color of the nearest point
@@ -193,9 +239,19 @@ function draw() {
       let point_color = ps.nearestPoint.color;
       fill(point_color.r, point_color.g, point_color.b);
       rect(10, height - 170, 40, 40);
-      text(`Nearest Point: (${ps.nearestPoint.point[0].toFixed(2)}, ${ps.nearestPoint.point[1].toFixed(2)})`,60,height - 157);
+      text(
+        `Nearest Point: (${ps.nearestPoint.point[0].toFixed(
+          2
+        )}, ${ps.nearestPoint.point[1].toFixed(2)})`,
+        60,
+        height - 157
+      );
 
-      text(`RGB: (${point_color.r}, ${point_color.g}, ${point_color.b})`,60,height - 135);
+      text(
+        `RGB: (${point_color.r}, ${point_color.g}, ${point_color.b})`,
+        60,
+        height - 135
+      );
     }
   }
 }

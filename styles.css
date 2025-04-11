@@ -43,7 +43,7 @@
 
 .ui {
   position: absolute;
-  top: 100px;
+  top: 150px;
   left: 930px;
   display: flex;
   flex-direction: column;
@@ -98,27 +98,44 @@
 
 .top-controls {
   display: flex;
-  gap: 20px;
+  gap: 2rem;
   padding: 10px;
   background-color: rgb(0, 0, 0);
-  border-radius: 4px;
   margin-bottom: 10px;
   align-items: center;
   z-index: 1;
 }
 
-.averaging-controls {
-  position: static;
+.show-hide-controls,
+.play-pause-controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 15px;
+}
+
+.dropdowns {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
-.averaging-controls label {
+.averaging-controls,
+.target-radius {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.averaging-controls label,
+.target-radius label {
   color: white;
 }
 
-.averaging-controls select {
+.averaging-controls select,
+.target-radius select {
   background-color: #333;
   color: white;
   border: 1px solid #555;
@@ -127,7 +144,8 @@
   cursor: pointer;
 }
 
-.averaging-controls select:hover {
+.averaging-controls select:hover,
+.target-radius select:hover {
   background-color: #444;
 }
 
@@ -153,6 +171,7 @@
 
 .top-controls button {
   background-color: #007bff;
+  width: 200px;
   color: white;
   border: none;
   border-radius: 4px;
