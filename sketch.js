@@ -7,7 +7,7 @@ let target_pixel = [0, 0];
 let points; //master array of all points
 let point_size_scale = 20; //slacing factor for size of points
 const n_frames_subset = 60; // Number of frames between making subset tree
-let target_radius = 50; // Radius of the target circle in screen pixels
+let target_radius = 40; // Radius of the target circle in screen pixels
 const subset_radius = 200; // Radius of the subset circle in screen pixels
 
 let noiseOffset = Math.random() * 1000;
@@ -48,9 +48,18 @@ let showPixelInfo = false; // Whether to show the pixel info or not
 let isPixelPlaying = true;
 let arePointsPlaying = true;
 
+let star_img;
+let rubin_circle_full;
+let rubin_circle_empty;
+let hue_offset = 300;
+
+let currentImage;
 function preload() {
   bgImage = loadImage("./assets/" + image_filename + ".jpg"); // Load the background image
   point_data = loadJSON("./data/" + image_filename + "_peaks.json"); //JSON data of point positions, sizes, and colors
+  star_img = loadImage("./assets/rubin-star.png"); // Load the star image
+  rubin_circle_full = loadImage("./assets/rubin-circle-full.png"); // Load the full circle image
+  rubin_circle_empty = loadImage("./assets/rubin-circle-empty.png"); // Load the empty circle image
 
   const audioPromises = [];
   for (let instrument of instruments) {
@@ -78,6 +87,10 @@ function setup() {
   canvas.parent("canvas-container"); // Attach the canvas to the HTML element with id 'canvas-container'
   background(255);
 
+  // Initialize currentImage based on dropdown value
+  const imageSelect = document.getElementById("imageSelection");
+  currentImage = imageSelect.value;
+
   bgImage.loadPixels(); // Load the pixel data of the background image
   target_point = [
     Math.floor(Math.random() * bgImage.width),
@@ -95,21 +108,11 @@ function setup() {
   sampler = new SamplePlayer();
 }
 
+function updateImageSelection(value) {
+  currentImage = value;
+}
+
 function draw() {
-  if (keyIsDown(LEFT_ARROW)) {
-    target_point[0] -= directionX * speed; // Move left
-  } else if (keyIsDown(RIGHT_ARROW)) {
-    target_point[0] += directionX * speed; // Move right
-  } else if (keyIsDown(UP_ARROW)) {
-    target_point[1] -= directionY * speed; // Move up
-  } else if (keyIsDown(DOWN_ARROW)) {
-    target_point[1] += directionY * speed; // Move down
-  }
-
-  // Constrain the target_pixel to stay within the canvas
-  target_point[0] = constrain(target_point[0], 0, bgImage.width);
-  target_point[1] = constrain(target_point[1], 0, bgImage.height);
-
   background(0);
   drawImage();
 
@@ -192,17 +195,77 @@ function draw() {
   }
   //////////////////////////DIAGNOSTICS//////////////////////////////////////////
   // draw the trigger circle in white
-  noFill();
-  stroke(255);
-  strokeWeight(2);
-  ellipse(
-    target_pixel[0],
-    target_pixel[1],
-    2 * target_radius,
-    2 * target_radius
+
+  let minBrightness = 50; // Minimum brightness value (0–255)
+  let currentBrightness = (rgbValues.r + rgbValues.g + rgbValues.b) / 3;
+
+  let r, g, b;
+  let brightness_boost = 1.2;
+  let brightness_scaleFactor = 1; // Default scale factor (1 = no scaling)
+  // If the brightness is below the minimum, scale the RGB values
+  if (currentBrightness < minBrightness) {
+    brightness_scaleFactor = minBrightness / currentBrightness;
+  }
+  r = min(rgbValues.r * brightness_scaleFactor * brightness_boost, 255);
+  g = min(rgbValues.g * brightness_scaleFactor * brightness_boost, 255);
+  b = min(rgbValues.b * brightness_scaleFactor * brightness_boost, 255);
+
+  // Only draw the circle when the star image is selected
+  if (currentImage === "star") {
+    noFill();
+    stroke(r, g, b, 200);
+    strokeWeight(2);
+    ellipse(
+      target_pixel[0],
+      target_pixel[1],
+      2 * target_radius,
+      2 * target_radius
+    );
+    stroke(0);
+    strokeWeight(1);
+  }
+
+  // Calculate the current brightness (average of RGB values)
+  if (currentImage === "star" || currentImage === "rubin-star") {
+    tint(r, g, b, 200); // Apply the tint with adjusted brightness
+  }
+
+  let scaleFactor = 0.5; // Example scale factor (50% of original size)
+  let img;
+  let img2;
+
+  switch (currentImage) {
+    case "star":
+      img = star_img;
+      break;
+    case "full":
+      img = rubin_circle_full;
+      break;
+    case "empty":
+      img = rubin_circle_empty;
+      break;
+    case "rubin-star":
+      img = star_img;
+      img2 = rubin_circle_empty;
+      break;
+  }
+  image(
+    img,
+    target_pixel[0] - (img.width * scaleFactor) / 2,
+    target_pixel[1] - (img.height * scaleFactor) / 2,
+    img.width * scaleFactor,
+    img.height * scaleFactor
   );
-  stroke(0);
-  strokeWeight(1);
+  noTint();
+  if (currentImage === "rubin-star") {
+    image(
+      img2,
+      target_pixel[0] - (img2.width * scaleFactor) / 2,
+      target_pixel[1] - (img2.height * scaleFactor) / 2,
+      img2.width * scaleFactor,
+      img2.height * scaleFactor
+    );
+  }
 
   if (showPoints) {
     drawPoints(points, { r: 0, g: 0, b: 255 }); // Plot subset points in yellow
@@ -232,6 +295,14 @@ function draw() {
       60,
       height - 65
     );
+    text(
+      `Hue: ${rgbToHue(rgbValues.r, rgbValues.g, rgbValues.b).toFixed(
+        2
+      )}, offset: ${hue_offset.toFixed(2)}`,
+      60,
+      height - 25
+    );
+
     //text(`imageX, imageY: (${imageX.toFixed(2)}, ${imageY.toFixed(2)})`, 10, height - 110);
 
     // Display the color of the nearest point

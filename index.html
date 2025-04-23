@@ -61,8 +61,20 @@
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="30">30</option>
-              <option value="40">40</option>
-              <option value="50" selected>50</option>
+              <option value="40" selected>40</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="image-selection">
+            <label for="imageSelection">Image:</label>
+            <select
+              id="imageSelection"
+              onchange="updateImageSelection(this.value)"
+            >
+              <option value="star" selected>Star</option>
+              <option value="full">Rubin One</option>
+              <option value="empty">Rubin Two</option>
+              <option value="rubin-star">Rubin Star</option>
             </select>
           </div>
         </div>

@@ -120,7 +120,9 @@ class PixelSynth {
 
     update(rgbValues) {
         let brightness = (rgbValues.r + rgbValues.g + rgbValues.b) / 3; // Calculate brightness as the average of r, g, b
-        let freqData = map(rgbValues.b, 0, 255, 0, 1); // Map to note pitches (should rescale all color data first or refercne a premade b-r image)
+        let hue = rgbToHue(rgbValues.r, rgbValues.g, rgbValues.b); // Calculate hue from RGB values
+        let freqData = mapHueToRange(hue, hue_offset);  // Map hue to a range of 0 to 1, with offset
+        //let freqData = map(rgbValues.b, 0, 255, 0, 1); // Map to note pitches (should rescale all color data first or refercne a premade b-r image)
         let amplitude = map(brightness, 0, 255, 0, 1); // Map brightness to a range of 0 to 1
 
         this.updateOsc(freqData, 0.2*amplitude**this.amplitudeScale);

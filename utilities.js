@@ -121,11 +121,31 @@ function updateTargetPoint() {
       // Update noise offset
       noiseOffset += noiseScale;
 
-      // Ensure the target point stays within the image
-      target_point[0] = constrain(target_point[0], 0, bgImage.width);
-      target_point[1] = constrain(target_point[1], 0, bgImage.height);
+      // // Ensure the target point stays within the image
+      // target_point[0] = constrain(target_point[0], 0, bgImage.width);
+      // target_point[1] = constrain(target_point[1], 0, bgImage.height);
     }
   }
+  // Handle keyboard interactions all the time
+  let dx = 0;
+  let dy = 0;
+
+  if (keyIsDown(LEFT_ARROW)) dx -= 1;
+  if (keyIsDown(RIGHT_ARROW)) dx += 1;
+  if (keyIsDown(UP_ARROW)) dy -= 1;
+  if (keyIsDown(DOWN_ARROW)) dy += 1;
+
+  if (dx !== 0 && dy !== 0) {
+    dx /= Math.SQRT2; // Normalize diagonal movement
+    dy /= Math.SQRT2;
+  }
+
+  target_point[0] += dx * directionX * speed;
+  target_point[1] += dy * directionY * speed;
+
+  // Constrain the target_pixel to stay within the canvas
+  target_point[0] = constrain(target_point[0], 0, bgImage.width);
+  target_point[1] = constrain(target_point[1], 0, bgImage.height);
 }
 
 function updateAveragingWindow() {
@@ -219,6 +239,46 @@ function getAverageRGBValues(x, y, n, useWeighting = true) {
   }
 
   return { r, g, b };
+}
+
+function rgbToHue(r, g, b) {
+  // Normalize RGB values to the range 0–1
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  // Find the maximum and minimum values
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+
+  let hue = 0;
+
+  // Calculate Hue based on the max channel
+  if (delta === 0) {
+      hue = 0; // Grayscale
+  } else if (max === r) {
+      hue = 60 * (((g - b) / delta) % 6);
+  } else if (max === g) {
+      hue = 60 * (((b - r) / delta) + 2);
+  } else if (max === b) {
+      hue = 60 * (((r - g) / delta) + 4);
+  }
+
+  // Ensure Hue is in the range 0–360
+  if (hue < 0) {
+      hue += 360;
+  }
+
+  return hue;
+}
+
+function mapHueToRange(hue, offset = 300) {
+  // Add the offset and wrap the hue to the range [0, 360)
+  let shiftedHue = (hue - offset + 360) % 360;
+
+  // Normalize the shifted hue to the range [0, 1]
+  return shiftedHue / 360;
 }
 
 function drawImage() {

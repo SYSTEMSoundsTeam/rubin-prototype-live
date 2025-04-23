@@ -11,45 +11,10 @@ function midi2note(midi) {
     return noteName + Math.round( octave )
 }
 
-// function createSampleNames() {
-//     for (let midi = midiMin; midi<=midiMax; midi++){
-//       let note = midi2note(midi)
-//       sampleFileNames.push(midi)
-//       sampleNames.push(note)
-//     }
-//   }
-
-// function getSoundPaths(soundName) {
-//     createSampleNames();
-//     for (let i = 0; i < sampleFileNames.length; i++) {
-//         soundPaths.push('./sounds/' + soundName + '/' + sampleFileNames[i] + '.mp3');
-//     }
-// }
-
-// function loadSoundBuffers() {
-//     soundPaths.forEach((path, index) => {
-//         loadSoundFile(path, index);
-//     });
-// }
-
-// function loadSoundFile(url, index) {
-//     fetch(url)
-//         .then(response => response.arrayBuffer())
-//         .then(data => audioContext.decodeAudioData(data))
-//         .then(buffer => {
-//             buffers[index] = buffer;
-//         });
-// }
-
 
 class SamplePlayer {
     constructor() {
-        // this.buffers = [];
-        // this.soundPaths = [];
-        // this.sampleFileNames = [];
-        // this.sampleNames = [];
-        // this.soundName = soundName;
-        
+
         this.amp_scale = 1;
         this.last_sample_index=-1;
         this.last_midi_note = -1;

@@ -66,6 +66,7 @@ class PointSearcher {
             y: neighbour.point[1],
             size: 0, // Initial size
             opacity: 255, // Initial opacity
+            color: neighbour.color,
         });
     }
 
@@ -75,7 +76,7 @@ class PointSearcher {
             let anim = this.animations[i];
 
             // Draw the circle
-            stroke(255, 255, 255, anim.opacity); // Yellow with fading opacity
+            stroke(anim.color.r, anim.color.g, anim.color.b, anim.opacity); // Yellow with fading opacity
 
             let point_i = image2canvas(anim.x, anim.y);
             ellipse(point_i[0], point_i[1], anim.size);

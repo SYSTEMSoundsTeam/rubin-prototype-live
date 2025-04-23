@@ -43,7 +43,7 @@
 
 .ui {
   position: absolute;
-  top: 150px;
+  top: 200px;
   left: 930px;
   display: flex;
   flex-direction: column;
@@ -182,4 +182,28 @@
 
 .top-controls button:hover {
   background-color: #0056b3;
+}
+
+.image-selection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-selection label {
+  color: white;
+  min-width: 50px;
+}
+
+.image-selection select {
+  background-color: #333;
+  color: white;
+  border: 1px solid #555;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.image-selection select:hover {
+  background-color: #444;
 }
