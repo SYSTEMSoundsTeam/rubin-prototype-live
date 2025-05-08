@@ -104,7 +104,6 @@ class SamplePlayer {
                 let distanceFromTarget = point.point[0] - target_point[0];
                 pan = map(distanceFromTarget, -target_radius, target_radius, -1, 1);
                 pan = constrain(pan, -1, 1); // Ensure pan stays within the valid range
-                console.log(pan)
                 sampler.playSample(point_freqData, 0.05 + point_amplitude ** 0.5, instrument, pan); // Play the sample with the mapped values
             }
           } 
