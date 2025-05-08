@@ -71,7 +71,7 @@ class SamplePlayer {
 
 
 
-    playSample(pitch_value, vol_value, instrument) {
+    playSample(pitch_value, vol_value, instrument, pan = 0) {
 
         const midiNoteIndex = int(map(pitch_value, 0,  1, 0, this.midiNumbers.length-1)); //map the star's size to an index in the midiNumbers array
         const midiNote = this.midiNumbers[midiNoteIndex];
@@ -85,7 +85,7 @@ class SamplePlayer {
             //sounds[sampleIndex].setVolume(vol_value*0.5);
 
             //using web audio api
-            this.playAudio(`${instrument}_${midiNote}`, vol_value)
+            this.playAudio(`${instrument}_${midiNote}`, vol_value, pan)
             //console.log(`Playing audio: harp_${midiNote} at volume: ${vol_value}`);
 
         }
@@ -100,24 +100,32 @@ class SamplePlayer {
                 let point_amplitude = map(point.size, 0, point_size_scale, 0, 0.75); // Map size to amplitude
                 let instrument = pointTypeToInstrument[point.type] || 'harp'; // Default to 'harp' if type is not found
                 //console.log('triggering', point_freqData, point_amplitude, point.type, instrument);
-                sampler.playSample(point_freqData, 0.05 + point_amplitude ** 0.5, instrument);
+                let pan = 0;
+                let distanceFromTarget = point.point[0] - target_point[0];
+                pan = map(distanceFromTarget, -target_radius, target_radius, -1, 1);
+                pan = constrain(pan, -1, 1); // Ensure pan stays within the valid range
+                console.log(pan)
+                sampler.playSample(point_freqData, 0.05 + point_amplitude ** 0.5, instrument, pan); // Play the sample with the mapped values
             }
           } 
     }
 
-    playAudio(name, volume = 1.0) {
+    playAudio(name, volume = 1.0, pan = 0.0) {
         if (audioBuffers[name]) {
             const source = audioContext.createBufferSource();
             const gainNode = audioContext.createGain(); // Create a GainNode for volume control
+            const pannerNode = audioContext.createStereoPanner(); // Create a StereoPannerNode for panning
     
             source.buffer = audioBuffers[name];
             source.connect(gainNode); // Connect the source to the GainNode
-            gainNode.connect(audioContext.destination); // Connect the GainNode to the destination
+            gainNode.connect(pannerNode); // Connect the GainNode to the PannerNode
+            pannerNode.connect(audioContext.destination); // Connect the PannerNode to the destination
     
             gainNode.gain.value = volume; // Set the volume (0.0 to 1.0)
+            pannerNode.pan.value = pan; // Set the pan (-1.0 for full left, 1.0 for full right)
     
             source.start(0);
-            //console.log(`Playing audio: ${name} at volume: ${volume}`);
+            console.log(`Playing audio: ${name} at volume: ${volume}, pan: ${pan}`);
         } else {
             console.log(`Audio buffer not loaded for: ${name}`);
         }
